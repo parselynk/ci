@@ -2,7 +2,7 @@
 
 class database_model extends CI_Model {
 
-    public $_result = '';
+    private $_result = '';
     private $_last_query = '';
 
     public function __construct() {
@@ -62,8 +62,8 @@ class database_model extends CI_Model {
      * select_all
      * 
      * Fetch all rows from static::$table_name and insert into objects of get_called_class() 
-     *   
-     * @return	objects of called class
+     * @set       
+     * @return	objects of class
      */
     public function select_all() {
 //        $query = $this->db->get(static::$table_name);
@@ -71,7 +71,8 @@ class database_model extends CI_Model {
         $sql = 'select * from ';
         $sql .= '' . static::$table_name . '';
         //die($sql);
-        return $this->select_query(($sql), get_called_class());
+        $this->_result = $this->select_query(($sql), get_called_class());
+        return $this;
     }
 
     /**
@@ -90,7 +91,8 @@ class database_model extends CI_Model {
             $sql .= 'AND id = ? ';
 
             //return self::result($this->db->get_where(static::$table_name, ['id' => $id], 1), get_called_class(),'row');
-            return $this->select_query($sql, get_called_class(), 'row', [$id]);
+            $this->_result = $this->select_query($sql, get_called_class(), 'row', [$id]);
+            return $this;
         } else {
             throw new Exception("No id is passed as parameter");
         }
@@ -113,7 +115,7 @@ class database_model extends CI_Model {
     public function select_where($field, $comparison_operator, $parameter) {
         $valid_operator = ['LIKE', '=', '>=', '<=', '>', '<'];
         $comparison_operator = strtoupper($comparison_operator);
-        validate($parameter);
+        validate($field); // only validates $field
         if (isset($parameter) && isset($comparison_operator) && isset($parameter)) {
             if (in_array($comparison_operator, $valid_operator)) {
                 $search = $parameter;
@@ -126,14 +128,14 @@ class database_model extends CI_Model {
 
                 if ($comparison_operator === 'LIKE') {
                     $sql .= "'%{$escaped_parameter}%'";
-                    $this->result = $this->select_query($sql, get_called_class(), 'all');
+                    $this->_result = $this->select_query($sql, get_called_class(), 'all');
                 } else {
                     $sql .= $escaped_parameter;
-                    $this->result = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
+                    $this->_result = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
                 }
 
                 $this->_last_query = $this->db->last_query();
-                return $this->result;
+                return $this;
             } else {
                 throw new Exception("Operator is not allowed ($comparison_operator) ");
             }
@@ -195,9 +197,9 @@ class database_model extends CI_Model {
      */
     public function select_between($field, $parameter=[]) {
         if (isset($field) && isset($parameter)) {
-            $parameter[0]='';
-            $parameter[1]='';
-            var_dump($field,$parameter);
+            //$parameter[0]='';
+            //$parameter[1]='';
+            //var_dump($field,$parameter);
             validate($field, $parameter );
             $min = $parameter[0];
             $max = $parameter[1];
@@ -213,10 +215,10 @@ class database_model extends CI_Model {
                 $sql .= 'AND ' . $field . ' ';
                 $sql .= 'BETWEEN ? AND ? ';
 
-                $this->result = $this->select_query($sql, get_called_class(), 'all', [$min,$max]);
+                $this->_result = $this->select_query($sql, get_called_class(), 'all', [$min,$max]);
 
             $this->_last_query = $this->db->last_query();
-            return $this->_result;
+            return $this;
          
         } else {
             throw new Exception("Column or Parameter(s) missed. field = $field | min = $min | max = $max" , 100);
@@ -291,9 +293,9 @@ class database_model extends CI_Model {
      * @return	$this object
      */
     
-    public function create() {
+    public function create($generated_id = NULL) {
         
-      // $this->_result = $this->db->insert(static::$table_name, $this);
+            //$this->id = "1222222"; 
             if($this->db->insert(static::$table_name, $this)){
                  $insert_id = $this->db->insert_id();
                  $this->_result = ['status'=>'true', 'inserted_id'=>$insert_id];

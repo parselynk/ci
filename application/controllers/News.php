@@ -11,7 +11,8 @@ class News extends CI_Controller {
     }
 
     public function index() {
-        $data['news'] = $this->news_model->select_all();
+        $this->news_model->select_all();
+        $data['news'] = $this->news_model->data(); 
 
 
         //var_dump($data['news']);
@@ -24,18 +25,18 @@ class News extends CI_Controller {
 
     public function save() {
         try {
-            $this->news_model->id = 105;
-            $this->news_model->title = 'Title DB update 2 check';
+            //$this->news_model->id = 105;
+            $this->news_model->title = 'check generated id 2 ';
             $this->news_model->text = 'We are checking update database';
             $this->news_model->slug = 'test';
             //$this->news_model->slugcv = 'test';
             $this->benchmark->mark('code_start');
             $data['news'] = $this->news_model->save();
             $this->benchmark->mark('code_end');
-            echo $this->benchmark->elapsed_time('code_start', 'code_end');
-
-            var_dump($data['news']->data());
-            die;
+             echo $this->benchmark->elapsed_time('code_start', 'code_end');
+//
+         var_dump($data['news']->data());
+//            //die;
         } catch (Exception $ex) {
             //echo error_message($ex,$this->news_model->last_query());
             //show_error( $ex->getTraceAsString(),100,'Custome Error Message');
@@ -52,21 +53,22 @@ class News extends CI_Controller {
         //$this->load->view('templates/footer');
     }
 
-    public function list_where($parameter, $field = "id", $operator = ">") {
-        /* Like Exampll */
-        //$data['news'] = $this->news_model->select_where($field, $operator, $parameter );
+    public function list_where($parameter, $field = "title", $operator = "like") {
+        /* Like Example */
+        //$this->news_model->select_where($field, $operator, $parameter );
         /* Comparison Example */
-        $parameter = '';
+        //$parameter = '';
         try {
-            $data['news'] = $this->news_model->select_where($field, $operator, $parameter);
+            $this->news_model->select_where($field, $operator, $parameter);
         } catch (Exception $ex) {
-            error_message($ex, $this->news_model->last_query());
+            //error_message($ex, $this->news_model->last_query());
             //show_error( $ex->getMessage(),100,'Webox Error Message');
+            show_webox_error($ex, '', 'Webox Error Message', $this->news_model->last_query());
         }
         echo $this->news_model->last_query();
 
-        //var_dump($data['news']);
-        //echo $this->db->get_compiled_select();
+      //  var_dump(            $this->news_model->data());
+        $data['news'] = $this->news_model->data();
         $data['title'] = 'News archive';
 
         $this->load->view('templates/header', $data);
@@ -102,9 +104,12 @@ class News extends CI_Controller {
         //var_dump($parameter);
         $parameter = [$min, $max];
         try {
-            $data['news'] = $this->news_model->select_between($field, $parameter);
+            $this->news_model->select_between($field, $parameter);
+            $data['news'] = $this->news_model->data();
         } catch (Exception $ex) {
-            error_message($ex, $this->news_model->last_query());
+            //error_message($ex, $this->news_model->last_query());
+            show_webox_error($ex, '', 'Webox Error Message', $this->news_model->last_query());
+
             //show_error( $ex->getTraceAsString(),100,'Custome Error Message');
         }
         echo $this->news_model->last_query();
@@ -117,7 +122,8 @@ class News extends CI_Controller {
 
     public function view_by_id($id = NULL) {
         // echo 'viw';die;
-        $data['news_item'] = $this->news_model->select_by_id($id);
+        $this->news_model->select_by_id($id);
+        $data['news_item'] = $this->news_model->data();
         $data['news_item']->date = strtotime('tomorrow');
         $segs = $this->uri->segment_array();
 //var_dump($segs);
@@ -126,5 +132,4 @@ class News extends CI_Controller {
         $this->load->view('news/view', $data);
         $this->load->view('templates/footer');
     }
-
 }
