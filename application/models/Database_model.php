@@ -198,7 +198,7 @@ class database_model extends CI_Model {
     public function select_between($field, $parameter=[]) {
         if (isset($field) && isset($parameter)) {
             //$parameter[0]='';
-            //$parameter[1]='';
+            $parameter[1]='';
             //var_dump($field,$parameter);
             validate($field, $parameter );
             $min = $parameter[0];

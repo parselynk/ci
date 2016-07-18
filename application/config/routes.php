@@ -58,6 +58,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 //index
 $route['news'] = 'news';
+$route['hmvc'] = 'hmvc';
+$route['hmvc/'] = 'hmvc/index';
+
 $route['news/save'] = 'news/save';
 
 
