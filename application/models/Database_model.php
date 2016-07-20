@@ -10,7 +10,6 @@ class database_model extends CI_Model {
         $this->load->database();
     }
 
-
     /**
      * __set 
      * 
@@ -35,7 +34,7 @@ class database_model extends CI_Model {
         }
         return $this;
     }
-    
+
     /**
      * data 
      * 
@@ -43,10 +42,10 @@ class database_model extends CI_Model {
      *   
      * @return	query result object
      */
-    public function data(){
+    public function data() {
         return $this->_result;
     }
-    
+
     /**
      * last_query 
      * 
@@ -54,10 +53,10 @@ class database_model extends CI_Model {
      *   
      * @return	String
      */
-    public function last_query(){
+    public function last_query() {
         return $this->_last_query;
     }
-    
+
     /**
      * select_all
      * 
@@ -76,13 +75,13 @@ class database_model extends CI_Model {
     }
 
     /**
-    * get_by_id
-    *
-    * fethces one row (only) based on its $id
-    *   
-    * @param	integer   $id	where clause parameters
-    * @return	object of custome class
-    */
+     * get_by_id
+     *
+     * fethces one row (only) based on its $id
+     *   
+     * @param	integer   $id	where clause parameters
+     * @return	object of custome class
+     */
     public function select_by_id($id = null) {
         if ($id) {
             $sql = 'select * from ';
@@ -143,8 +142,8 @@ class database_model extends CI_Model {
             throw new Exception("Parameter(s) missed field = $field | operator = $comparison_operator | parameter = $parameter ");
         }
     }
-    
-     /**
+
+    /**
      * select_in 
      * 
      * fetches query using IN clause 
@@ -157,28 +156,26 @@ class database_model extends CI_Model {
      * @return	object(s) of called class
      */
     public function select_in($field, $parameter) {
-       //$field='check';
-       //$parameter='';
-        validate($field,$parameter);
+        //$field='check';
+        //$parameter='';
+        validate($field, $parameter);
         if (isset($field) && isset($parameter)) {
-            if(is_array($parameter)){
-                
+            if (is_array($parameter)) {
+
                 $sql = 'select * from ';
                 $sql .= static::$table_name . ' ';
                 $sql .= 'WHERE 1 ';
                 $sql .= 'AND ' . $field . ' ';
                 $sql .= 'IN ? ';
 
-                    $this->_result = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
+                $this->_result = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
             } else {
-                throw new Exception("parameters in Query must be passed as an array<br>Current Parameter: $parameter" , 101 );
-               //                 set_error_handler("parameters in Query must be passed as an array<br>Current Parameter: $parameter");
-
+                throw new Exception("parameters in Query must be passed as an array<br>Current Parameter: $parameter", 101);
+                //                 set_error_handler("parameters in Query must be passed as an array<br>Current Parameter: $parameter");
             }
 
             $this->_last_query = $this->db->last_query();
             return $this;
-         
         } else {
             throw new Exception("Column or Parameter(s) missed field = $field  | parameter = $parameter Undefined ");
         }
@@ -195,38 +192,37 @@ class database_model extends CI_Model {
      * @param   Number    $max     maximum value in range
      * @return	object(s) of called class
      */
-    public function select_between($field, $parameter=[]) {
+    public function select_between($field, $parameter = []) {
         if (isset($field) && isset($parameter)) {
             //$parameter[0]='';
-            $parameter[1]='';
+            $parameter[1] = '';
             //var_dump($field,$parameter);
-            validate($field, $parameter );
+            validate($field, $parameter);
             $min = $parameter[0];
             $max = $parameter[1];
-            if($min > $max){
+            if ($min > $max) {
                 $temp_min = $min;
                 $temp_max = $max;
                 $min = $temp_max;
                 $max = $temp_min;
             }
-                $sql = 'select * from ';
-                $sql .= static::$table_name . ' ';
-                $sql .= 'WHERE 1 ';
-                $sql .= 'AND ' . $field . ' ';
-                $sql .= 'BETWEEN ? AND ? ';
+            $sql = 'select * from ';
+            $sql .= static::$table_name . ' ';
+            $sql .= 'WHERE 1 ';
+            $sql .= 'AND ' . $field . ' ';
+            $sql .= 'BETWEEN ? AND ? ';
 
-                $this->_result = $this->select_query($sql, get_called_class(), 'all', [$min,$max]);
+            $this->_result = $this->select_query($sql, get_called_class(), 'all', [$min, $max]);
 
             $this->_last_query = $this->db->last_query();
             return $this;
-         
         } else {
-            throw new Exception("Column or Parameter(s) missed. field = $field | min = $min | max = $max" , 100);
+            throw new Exception("Column or Parameter(s) missed. field = $field | min = $min | max = $max", 100);
         }
     }
 
     public function get_calling_function() {
-   
+
         $caller = debug_backtrace();
         $called = $caller[1];
         $caller = $caller[2];
@@ -243,7 +239,7 @@ class database_model extends CI_Model {
         }
         return $response;
     }
-    
+
     protected function attributes() {
         $attributes = array();
         foreach (static::$db_fields as $field) {
@@ -253,16 +249,16 @@ class database_model extends CI_Model {
         }
         return $attributes;
     }
-    
+
     protected function assigned_attributes() {
         global $database;
         $clean_attributes = array();
-            // sanitize the values before submitting
-            // Note: does not alter the actual value of each attribute
-            foreach($this->attributes() as $key => $value){
-                $clean_attributes[$key] = $value;
-            }
-            return $clean_attributes;
+        // sanitize the values before submitting
+        // Note: does not alter the actual value of each attribute
+        foreach ($this->attributes() as $key => $value) {
+            $clean_attributes[$key] = $value;
+        }
+        return $clean_attributes;
     }
 
     /**
@@ -277,13 +273,11 @@ class database_model extends CI_Model {
      *   
      * @return	$this object
      */
-    
     public function save() {
         //var_export($this);die;
-            return isset($this->id)? $this->modify() : $this->create();
-       
+        return isset($this->id) ? $this->modify() : $this->create();
     }
-    
+
     /**
      * create 
      * 
@@ -292,24 +286,24 @@ class database_model extends CI_Model {
      *   
      * @return	$this object
      */
-    
     public function create($generated_id = false) {
-        
+
         if ($generated_id !== true) {
-            $this->id = $this->generate_unique_id(static::$table_prefix); 
+            $this->id = $this->generate_unique_id(static::$table_prefix);
         }
-        if($this->db->insert(static::$table_name, $this)){
-            
-            $insert_id = isset($this->id)?$this->id:$this->db->insert_id();
-            $this->_result = ['status'=>'true', 'inserted_id'=>$insert_id];
+        if ($this->db->insert(static::$table_name, $this)) {
+
+            $insert_id = isset($this->id) ? $this->id : $this->db->insert_id();
+            $affected_rows = $this->db->affected_rows();
+            $this->_result = ['status' => 'true',  'affected_rows' => $affected_rows,'inserted_id' => $insert_id];
         } else {
-            $this->_result = ['status'=>'false'];
+            $this->_result = ['status' => 'false'];
         }
-       $this->_last_query = $this->db->last_query();
-       return $this;
+        $this->_last_query = $this->db->last_query();
+        return $this;
     }
-    
-     /**
+
+    /**
      * modify 
      * 
      * updates existing data in database  
@@ -317,25 +311,24 @@ class database_model extends CI_Model {
      *   
      * @return	$this object
      */
-    
     public function modify() {
-        
+
         $this->db->where('id', $this->id);
-        
+
         //[NOTE]
         //row gets modified only if "New" data is updated in columns 
-        if($this->db->update(static::$table_name, $this)){
-            $affected_rows = $this->db->affected_rows(); 
-            $this->_result = ['status'=>'true', 'affected_rows'=> $affected_rows];
+        if ($this->db->update(static::$table_name, $this)) {
+            $affected_rows = $this->db->affected_rows();
+            $this->_result = ['status' => 'true', 'affected_rows' => $affected_rows];
         } else {
-            $affected_rows = $this->db->affected_rows(); 
-            $this->_result = ['status'=>'false', 'affected_rows'=> $affected_rows];
+            $affected_rows = $this->db->affected_rows();
+            $this->_result = ['status' => 'false', 'affected_rows' => $affected_rows];
         }
-       $this->_last_query = $this->db->last_query();
-       return $this;
+        $this->_last_query = $this->db->last_query();
+        return $this;
     }
-    
-         /**
+
+    /**
      * remove 
      * 
      * remove rows from database based on column name and array of parameters  
@@ -343,25 +336,22 @@ class database_model extends CI_Model {
      *   
      * @return	$this object
      */
-    
-    public function remove($field,$parameter=[]) {
-        validate($field, $parameter );
-        $this->db->where_in($field,$parameter);
-        
+    public function remove($field, $parameter = []) {
+        validate($field, $parameter);
+        $this->db->where_in($field, $parameter);
+
         //[NOTE]
         //row gets removed only if "New" row is removed i 
-        if($status = $this->db->delete(static::$table_name)){
-            $affected_rows = $this->db->affected_rows(); 
-            $this->_result = ['status'=>'true', 'affected_rows'=> $affected_rows];
+        if ($status = $this->db->delete(static::$table_name)) {
+            $affected_rows = $this->db->affected_rows();
+            $this->_result = ['status' => 'true', 'affected_rows' => $affected_rows];
         } else {
-            $affected_rows = $this->db->affected_rows(); 
-            $this->_result = ['status'=>'false', 'affected_rows'=> $affected_rows];
+            $affected_rows = $this->db->affected_rows();
+            $this->_result = ['status' => 'false', 'affected_rows' => $affected_rows];
         }
-       $this->_last_query = $this->db->last_query();
-       return $this;
+        $this->_last_query = $this->db->last_query();
+        return $this;
     }
-    
- 
 
     /**
      * select_query
@@ -378,7 +368,6 @@ class database_model extends CI_Model {
      * @param   string  $_result_set set of result(s) (all, row)
      * @return	object(s) of custom class, std object or array
      */
-    
     public function select_query($query, $class, $_result_set = 'all', $params = NULL) {
         $caller_fucntion = $this->get_calling_function();
         if ($query) {
@@ -394,7 +383,6 @@ class database_model extends CI_Model {
             } else {
                 try {
                     return self::result($this->db->query($query), $class, $_result_set);
-
                 } catch (Exception $ex) {
                     echo $ex->getMessage();
                 }
@@ -435,18 +423,16 @@ class database_model extends CI_Model {
             }
         }
     }
-    
-     public function generate_unique_id($prefix="", $more_entropy = FALSE){
-                    $prefix = strtoupper($prefix).strtolower($prefix);
-                    $length = strlen($prefix) / 2;
-                    $key='';
-                    for($i=0; $i<$length; $i++) {
-                        $key .= $prefix[(mt_rand(0,(strlen($prefix)-1)))];
-                    }
-		
-                    return uniqid($key,$more_entropy);
-			
-		}
-                
+
+    public function generate_unique_id($prefix = "", $more_entropy = FALSE) {
+        $prefix = strtoupper($prefix) . strtolower($prefix);
+        $length = strlen($prefix) / 2;
+        $key = '';
+        for ($i = 0; $i < $length; $i++) {
+            $key .= $prefix[(mt_rand(0, (strlen($prefix) - 1)))];
+        }
+
+        return uniqid($key, $more_entropy);
+    }
 
 }
