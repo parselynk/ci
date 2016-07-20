@@ -43,6 +43,8 @@ class News extends CI_Controller {
             //set_status_header();
             show_webox_error($ex, '', 'Webox Error Message', $this->news_model->last_query());
         }
+        
+        
 
 
 
@@ -52,6 +54,31 @@ class News extends CI_Controller {
         //$this->load->view('news/index', $data);
         //$this->load->view('templates/footer');
     }
+    
+        public function remove($id) {
+            //$param = preg_split("/(,|_|-)/", $parameter);
+//            $parameter = [];
+//            foreach($param as $value){
+//                $parameter[]=[$field."=>".$value];
+//            }
+//            $vardump($parameter);die();
+        try {
+ 
+    
+            $data['news'] = $this->news_model->remove($id);
+            $this->benchmark->mark('code_end');
+             echo $this->benchmark->elapsed_time('code_start', 'code_end');
+echo $this->news_model->last_query();
+         var_dump($data['news']->data());
+//            //die;
+        } catch (Exception $ex) {
+            //echo error_message($ex,$this->news_model->last_query());
+            //show_error( $ex->getTraceAsString(),100,'Custome Error Message');
+            //set_status_header();
+            show_webox_error($ex, '', 'Webox Error Message', $this->news_model->last_query());
+        }
+        
+        }
 
     public function list_where($parameter, $field = "title", $operator = "like") {
         /* Like Example */

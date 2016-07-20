@@ -62,6 +62,7 @@ $route['hmvc'] = 'hmvc';
 $route['hmvc/'] = 'hmvc/index';
 
 $route['news/save'] = 'news/save';
+$route['news/remove'] = 'news/remove';
 
 
 //list_in

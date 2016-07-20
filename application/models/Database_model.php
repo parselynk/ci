@@ -333,6 +333,32 @@ class database_model extends CI_Model {
        return $this;
     }
     
+         /**
+     * modify 
+     * 
+     * updates existing data in database  
+     *
+     *   
+     * @return	$this object
+     */
+    
+    public function remove($id) {
+        
+        $this->db->where('id', $id);
+        
+        //[NOTE]
+        //row gets modified only if "New" data is updated in columns 
+        if($this->db->delete(static::$table_name)){
+            $affected_rows = $this->db->affected_rows(); 
+            $this->_result = ['status'=>'true', 'affected_rows'=> $affected_rows];
+        } else {
+            $affected_rows = $this->db->affected_rows(); 
+            $this->_result = ['status'=>'false', 'affected_rows'=> $affected_rows];
+        }
+       $this->_last_query = $this->db->last_query();
+       return $this;
+    }
+    
  
 
     /**
