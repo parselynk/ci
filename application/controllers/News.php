@@ -12,7 +12,7 @@ class News extends CI_Controller {
 
     public function index() {
         $this->news_model->select_all();
-        $data['news'] = $this->news_model->data(); 
+        $data['news'] = $this->news_model->data();
 
 
         //var_dump($data['news']);
@@ -23,7 +23,7 @@ class News extends CI_Controller {
         $this->load->view('templates/footer');
     }
 
-    public function save() {
+    public function save($generate_id=false) {
         try {
             //$this->news_model->id = 105;
             $this->news_model->title = 'check generated id 2 ';
@@ -33,9 +33,9 @@ class News extends CI_Controller {
             $this->benchmark->mark('code_start');
             $data['news'] = $this->news_model->save();
             $this->benchmark->mark('code_end');
-             echo $this->benchmark->elapsed_time('code_start', 'code_end');
+            echo $this->benchmark->elapsed_time('code_start', 'code_end');
 //
-         var_dump($data['news']->data());
+            var_dump($data['news']->data());
 //            //die;
         } catch (Exception $ex) {
             //echo error_message($ex,$this->news_model->last_query());
@@ -43,42 +43,23 @@ class News extends CI_Controller {
             //set_status_header();
             show_webox_error($ex, '', 'Webox Error Message', $this->news_model->last_query());
         }
-        
-        
 
-
-
-        //var_dump($data['news']);
-        //$data['title'] = 'News archive';
-        //$this->load->view('templates/header', $data);
-        //$this->load->view('news/index', $data);
-        //$this->load->view('templates/footer');
     }
-    
-        public function remove($id) {
-            //$param = preg_split("/(,|_|-)/", $parameter);
-//            $parameter = [];
-//            foreach($param as $value){
-//                $parameter[]=[$field."=>".$value];
-//            }
-//            $vardump($parameter);die();
+
+    public function remove($parameter, $field = "id") {
+        $param = preg_split("/(,|_|-)/", $parameter);
         try {
- 
-    
-            $data['news'] = $this->news_model->remove($id);
+            $data['news'] = $this->news_model->remove($field, $param);
             $this->benchmark->mark('code_end');
-             echo $this->benchmark->elapsed_time('code_start', 'code_end');
-echo $this->news_model->last_query();
-         var_dump($data['news']->data());
-//            //die;
+            echo $this->benchmark->elapsed_time('code_start', 'code_end');
+            echo $this->news_model->last_query();
+            var_dump($data['news']->data());
+            //die;
         } catch (Exception $ex) {
-            //echo error_message($ex,$this->news_model->last_query());
             //show_error( $ex->getTraceAsString(),100,'Custome Error Message');
-            //set_status_header();
             show_webox_error($ex, '', 'Webox Error Message', $this->news_model->last_query());
         }
-        
-        }
+    }
 
     public function list_where($parameter, $field = "title", $operator = "like") {
         /* Like Example */
@@ -94,7 +75,7 @@ echo $this->news_model->last_query();
         }
         echo $this->news_model->last_query();
 
-      //  var_dump(            $this->news_model->data());
+        //  var_dump(            $this->news_model->data());
         $data['news'] = $this->news_model->data();
         $data['title'] = 'News archive';
 
@@ -159,4 +140,5 @@ echo $this->news_model->last_query();
         $this->load->view('news/view', $data);
         $this->load->view('templates/footer');
     }
+
 }

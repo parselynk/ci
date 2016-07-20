@@ -4,6 +4,7 @@ class News_model extends database_model {
 
     protected static $table_name = "news";
     public static $db_fields = ['id', 'title', 'slug', 'text','date'];
+    public static $table_prefix = "news";
     public $id;
     public $title;
     public $slug;

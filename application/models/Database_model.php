@@ -293,16 +293,18 @@ class database_model extends CI_Model {
      * @return	$this object
      */
     
-    public function create($generated_id = NULL) {
+    public function create($generated_id = false) {
         
-            //$this->id = "1222222"; 
-            if($this->db->insert(static::$table_name, $this)){
-                 $insert_id = $this->db->insert_id();
-                 $this->_result = ['status'=>'true', 'inserted_id'=>$insert_id];
-                 
-            } else {
-                 $this->_result = ['status'=>'false'];
-            }
+        if ($generated_id !== true) {
+            $this->id = $this->generate_unique_id(static::$table_prefix); 
+        }
+        if($this->db->insert(static::$table_name, $this)){
+            
+            $insert_id = isset($this->id)?$this->id:$this->db->insert_id();
+            $this->_result = ['status'=>'true', 'inserted_id'=>$insert_id];
+        } else {
+            $this->_result = ['status'=>'false'];
+        }
        $this->_last_query = $this->db->last_query();
        return $this;
     }
@@ -334,21 +336,21 @@ class database_model extends CI_Model {
     }
     
          /**
-     * modify 
+     * remove 
      * 
-     * updates existing data in database  
+     * remove rows from database based on column name and array of parameters  
      *
      *   
      * @return	$this object
      */
     
-    public function remove($id) {
-        
-        $this->db->where('id', $id);
+    public function remove($field,$parameter=[]) {
+        validate($field, $parameter );
+        $this->db->where_in($field,$parameter);
         
         //[NOTE]
-        //row gets modified only if "New" data is updated in columns 
-        if($this->db->delete(static::$table_name)){
+        //row gets removed only if "New" row is removed i 
+        if($status = $this->db->delete(static::$table_name)){
             $affected_rows = $this->db->affected_rows(); 
             $this->_result = ['status'=>'true', 'affected_rows'=> $affected_rows];
         } else {
@@ -433,5 +435,18 @@ class database_model extends CI_Model {
             }
         }
     }
+    
+     public function generate_unique_id($prefix="", $more_entropy = FALSE){
+                    $prefix = strtoupper($prefix).strtolower($prefix);
+                    $length = strlen($prefix) / 2;
+                    $key='';
+                    for($i=0; $i<$length; $i++) {
+                        $key .= $prefix[(mt_rand(0,(strlen($prefix)-1)))];
+                    }
+		
+                    return uniqid($key,$more_entropy);
+			
+		}
+                
 
 }
