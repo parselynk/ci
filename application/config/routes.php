@@ -87,6 +87,6 @@ $route['news/list_where/'] = 'news/list_where/';
 $route['news/search/(:num)/(:num)'] = 'news/list_between/$1/$2';
 
 //list_where
-$route['news/(:num)'] = 'news/view_by_id/$1';
+$route['news/(:any)'] = 'news/view_by_id/$1';
 //$route['(:any)'] = 'pages';
 //$route['default_controller'] = 'pages/view';
