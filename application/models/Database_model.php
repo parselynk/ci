@@ -47,6 +47,7 @@ class database_model extends CI_Model {
      * @return	true
      */
           public function set_properties($parameters) {
+              //var_dump($this);die;
 //          $properties = [
 //              "title"=>"test set_properties",
 //              "slug"=>"test set_properties test slug",
@@ -55,8 +56,8 @@ class database_model extends CI_Model {
           $properties = $parameters;
           validate($properties);
           foreach ($properties as $property => $value) {
-              if(property_exists($this->news_model, $property)){
-                  $this->news_model->$property = $value;
+              if(property_exists($this, $property)){
+                  $this->$property = $value;
                   unset($properties[$property]);
               }else{
                   $message = "'$property' is not a news_model property";
