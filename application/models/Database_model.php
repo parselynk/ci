@@ -2,8 +2,9 @@
 
 class database_model extends CI_Model {
 
-    private $_result = '';
+    private $_response = '';
     private $_last_query = '';
+    private $_db_prefix = 'wx';
 
     public function __construct() {
         parent::__construct();
@@ -34,7 +35,37 @@ class database_model extends CI_Model {
         }
         return $this;
     }
-
+    /**
+     * set_properties 
+     * 
+     * sets objects properties based on input data
+     *
+     * helps to set object attributes for save method.
+     * this method will be called within save method.
+     *   
+     * @parameters	array of properties and values
+     * @return	true
+     */
+          public function set_properties($parameters) {
+//          $properties = [
+//              "title"=>"test set_properties",
+//              "slug"=>"test set_properties test slug",
+//              "text"=>"set_properties set_properties set_properties text",
+//          ];
+          $properties = $parameters;
+          validate($properties);
+          foreach ($properties as $property => $value) {
+              if(property_exists($this->news_model, $property)){
+                  $this->news_model->$property = $value;
+                  unset($properties[$property]);
+              }else{
+                  $message = "'$property' is not a news_model property";
+                  throw new Exception($message);
+              }
+          }
+         return true; 
+          
+    }
     /**
      * data 
      * 
@@ -42,8 +73,8 @@ class database_model extends CI_Model {
      *   
      * @return	query result object
      */
-    public function data() {
-        return $this->_result;
+    public function get_response() {
+        return $this->_response;
     }
 
     /**
@@ -53,7 +84,7 @@ class database_model extends CI_Model {
      *   
      * @return	String
      */
-    public function last_query() {
+    public function get_last_query() {
         return $this->_last_query;
     }
 
@@ -66,11 +97,11 @@ class database_model extends CI_Model {
      */
     public function select_all() {
 //        $query = $this->db->get(static::$table_name);
-//        return $query->custom_result_object(get_called_class());
+//        return $query->custom_response_object(get_called_class());
         $sql = 'select * from ';
         $sql .= '' . static::$table_name . '';
         //die($sql);
-        $this->_result = $this->select_query(($sql), get_called_class());
+        $this->_response = $this->select_query(($sql), get_called_class());
         return $this;
     }
 
@@ -90,7 +121,7 @@ class database_model extends CI_Model {
             $sql .= 'AND id = ? ';
 
             //return self::result($this->db->get_where(static::$table_name, ['id' => $id], 1), get_called_class(),'row');
-            $this->_result = $this->select_query($sql, get_called_class(), 'row', [$id]);
+            $this->_response = $this->select_query($sql, get_called_class(), 'row', [$id]);
             return $this;
         } else {
             throw new Exception("No id is passed as parameter");
@@ -127,10 +158,10 @@ class database_model extends CI_Model {
 
                 if ($comparison_operator === 'LIKE') {
                     $sql .= "'%{$escaped_parameter}%'";
-                    $this->_result = $this->select_query($sql, get_called_class(), 'all');
+                    $this->_response = $this->select_query($sql, get_called_class(), 'all');
                 } else {
                     $sql .= $escaped_parameter;
-                    $this->_result = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
+                    $this->_response = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
                 }
 
                 $this->_last_query = $this->db->last_query();
@@ -168,7 +199,7 @@ class database_model extends CI_Model {
                 $sql .= 'AND ' . $field . ' ';
                 $sql .= 'IN ? ';
 
-                $this->_result = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
+                $this->_response = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
             } else {
                 throw new Exception("parameters in Query must be passed as an array<br>Current Parameter: $parameter", 101);
                 //                 set_error_handler("parameters in Query must be passed as an array<br>Current Parameter: $parameter");
@@ -212,7 +243,7 @@ class database_model extends CI_Model {
             $sql .= 'AND ' . $field . ' ';
             $sql .= 'BETWEEN ? AND ? ';
 
-            $this->_result = $this->select_query($sql, get_called_class(), 'all', [$min, $max]);
+            $this->_response = $this->select_query($sql, get_called_class(), 'all', [$min, $max]);
 
             $this->_last_query = $this->db->last_query();
             return $this;
@@ -275,6 +306,7 @@ class database_model extends CI_Model {
      */
     public function save() {
         //var_export($this);die;
+        
         return isset($this->id) ? $this->modify() : $this->create();
     }
 
@@ -286,18 +318,18 @@ class database_model extends CI_Model {
      *   
      * @return	$this object
      */
-    public function create($generated_id = false) {
+    public function create($generated_id = true) {
 
-        if ($generated_id !== true) {
-            $this->id = $this->generate_unique_id(static::$table_prefix);
+        if ($generated_id === true) {
+            $this->id = $this->generate_unique_id(static::$table_name);
         }
         if ($this->db->insert(static::$table_name, $this)) {
 
             $insert_id = isset($this->id) ? $this->id : $this->db->insert_id();
             $affected_rows = $this->db->affected_rows();
-            $this->_result = ['status' => 'true',  'affected_rows' => $affected_rows,'inserted_id' => $insert_id];
+            $this->_response = ['success' => 'true',  'affected_rows' => $affected_rows,'inserted_id' => $insert_id];
         } else {
-            $this->_result = ['status' => 'false'];
+            $this->_response = ['success' => 'false'];
         }
         $this->_last_query = $this->db->last_query();
         return $this;
@@ -319,10 +351,10 @@ class database_model extends CI_Model {
         //row gets modified only if "New" data is updated in columns 
         if ($this->db->update(static::$table_name, $this)) {
             $affected_rows = $this->db->affected_rows();
-            $this->_result = ['status' => 'true', 'affected_rows' => $affected_rows];
+            $this->_response = ['success' => 'true', 'affected_rows' => $affected_rows];
         } else {
             $affected_rows = $this->db->affected_rows();
-            $this->_result = ['status' => 'false', 'affected_rows' => $affected_rows];
+            $this->_response = ['success' => 'false', 'affected_rows' => $affected_rows];
         }
         $this->_last_query = $this->db->last_query();
         return $this;
@@ -342,12 +374,12 @@ class database_model extends CI_Model {
 
         //[NOTE]
         //row gets removed only if "New" row is removed i 
-        if ($status = $this->db->delete(static::$table_name)) {
+        if ($success = $this->db->delete(static::$table_name)) {
             $affected_rows = $this->db->affected_rows();
-            $this->_result = ['status' => 'true', 'affected_rows' => $affected_rows];
+            $this->_response = ['success' => 'true', 'affected_rows' => $affected_rows];
         } else {
             $affected_rows = $this->db->affected_rows();
-            $this->_result = ['status' => 'false', 'affected_rows' => $affected_rows];
+            $this->_response = ['success' => 'false', 'affected_rows' => $affected_rows];
         }
         $this->_last_query = $this->db->last_query();
         return $this;
@@ -365,24 +397,24 @@ class database_model extends CI_Model {
      *   
      * @param	sql     $query	
      * @param	string	$class prepare data for class 
-     * @param   string  $_result_set set of result(s) (all, row)
+     * @param   string  $_response_set set of result(s) (all, row)
      * @return	object(s) of custom class, std object or array
      */
-    public function select_query($query, $class, $_result_set = 'all', $params = NULL) {
+    public function select_query($query, $class, $_response_set = 'all', $params = NULL) {
         $caller_fucntion = $this->get_calling_function();
         if ($query) {
             //echo $query;die;
             if ($params) {
                 if (is_array($params)) {
-                    return self::result($this->db->query($query, $params), $class, $_result_set);
+                    return self::result($this->db->query($query, $params), $class, $_response_set);
                 } else {
                     throw new Exception("parameters in Query must be passed as an array<br> sql: " . $this->db->get_compiled_select());
                 }//var_export( $query);die;
-            } else if (!$params && $_result_set != "all") {
+            } else if (!$params && $_response_set != "all") {
                 throw new Exception("Where got parameters ???<br> sql: " . $this->db->get_compiled_select());
             } else {
                 try {
-                    return self::result($this->db->query($query), $class, $_result_set);
+                    return self::result($this->db->query($query), $class, $_response_set);
                 } catch (Exception $ex) {
                     echo $ex->getMessage();
                 }
@@ -402,10 +434,10 @@ class database_model extends CI_Model {
      *   
      * @param	object   $query  query object from DB class
      * @param	string	 $type   type of result_set: "object","array" or name of custome class
-     * @return	string   $_result_set can be "all" results or a "row" of result 
+     * @return	string   $_response_set can be "all" results or a "row" of result 
      */
-    public static function result($query, $type = 'object', $_result_set = 'all') {
-        if ($_result_set === 'all') {
+    public static function result($query, $type = 'object', $_response_set = 'all') {
+        if ($_response_set === 'all') {
             if ($type === 'array') {
                 return $query->result_array();
             } elseif ($type === 'object') {
