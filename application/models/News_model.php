@@ -3,7 +3,7 @@
 class News_model extends database_model {
 
     protected static $table_name = "news";
-    public static $db_fields = ['id', 'title', 'slug', 'text','date'];
+    public static $db_fields = array('id', 'title', 'slug'=>array('null'), 'text','date');
     public $id;
     public $title;
     public $slug;

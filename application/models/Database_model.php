@@ -28,6 +28,7 @@ class database_model extends CI_Model {
           $db::fields are most of the time gets skipped
           but property_exists() for sure checks if set attributes exist in called class
          */
+        //to-do: use validate fopr checking db fields
         if (in_array($name, static::$db_fields) && property_exists(get_called_class(), $name)) {
             $this->$name = $value;
         } else {
@@ -146,7 +147,7 @@ class database_model extends CI_Model {
     public function select_where($field, $comparison_operator, $parameter) {
         $valid_operator = ['LIKE', '=', '>=', '<=', '>', '<'];
         $comparison_operator = strtoupper($comparison_operator);
-        validate($field); // only validates $field
+        validate($field);
         if (isset($parameter) && isset($comparison_operator) && isset($parameter)) {
             if (in_array($comparison_operator, $valid_operator)) {
                 $search = $parameter;
@@ -156,7 +157,6 @@ class database_model extends CI_Model {
                 $sql .= 'WHERE 1 ';
                 $sql .= 'AND ' . $field . ' ';
                 $sql .= $comparison_operator . ' ';
-
                 if ($comparison_operator === 'LIKE') {
                     $sql .= "'%{$escaped_parameter}%'";
                     $this->_response = $this->select_query($sql, get_called_class(), 'all');

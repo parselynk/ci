@@ -32,9 +32,9 @@ class News extends CI_Controller {
             //$this->news_model->
             $properties = [
               "id"=>"wNsw578fac9",  
-              "title"=>"test set_properties check error",
-              "slug"=>"test set_properties test slug",
-              "text"=>"set_properties set_properties set_properties text",
+              "title"=>"Jafar",
+              "slug"=>"",
+              "text"=>"",
             ];
             $this->news_model->set_properties($properties);
             $this->benchmark->mark('code_start');
