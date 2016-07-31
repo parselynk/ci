@@ -34,7 +34,7 @@ class News extends CI_Controller {
               "id"=>"wNsw578fac9",  
               "title"=>"Jafar",
               "slug"=>"",
-              "text"=>"",
+              "text"=>"checking",
             ];
             $this->news_model->set_properties($properties);
             $this->benchmark->mark('code_start');
@@ -92,8 +92,11 @@ class News extends CI_Controller {
     }
 
     public function list_in($parameter, $field = "id") {
-        //creates an array from url's passed parameter using delimiters:[',' '_' '-']
+        //gets parameters as string -> string(7) "5,5,7_8"
+        //creates an array passed parameter using delimiters:[',' '_' '-'] ->
+        //array(4) { [0]=> string(1) "5" [1]=> string(1) "5" [2]=> string(1) "7" [3]=> string(1) "8" }
         $parameter = preg_split("/(,|_|-)/", $parameter);
+        $parameter[]='18';
         try {
             $this->news_model->select_in($field, $parameter);
             $data['news'] = $this->news_model->get_response();
@@ -113,7 +116,7 @@ class News extends CI_Controller {
     }
 
     public function list_between($min, $max, $field = 'id') {
-
+        //echo "here" .' '. $min .' '. $max;
         //generates array from $parameter
         //$parameter = preg_split( "/(,|_)/", $parameter );
         //var_dump($parameter);

@@ -47,7 +47,7 @@ class database_model extends CI_Model {
      * @parameters	array of properties and values
      * @return	true
      */
-          public function set_properties($parameters) {
+          public function set_properties($parameters=[]) {
               //var_dump($this);die;
 //          $properties = [
 //              "title"=>"test set_properties",
@@ -145,10 +145,11 @@ class database_model extends CI_Model {
      * @return	object(s) of custom class
      */
     public function select_where($field, $comparison_operator, $parameter) {
+        
         $valid_operator = ['LIKE', '=', '>=', '<=', '>', '<'];
         $comparison_operator = strtoupper($comparison_operator);
         validate($field);
-        if (isset($parameter) && isset($comparison_operator) && isset($parameter)) {
+        if (isset($parameter) && isset($comparison_operator)) {
             if (in_array($comparison_operator, $valid_operator)) {
                 $search = $parameter;
                 $escaped_parameter = $this->db->escape_like_str($search);
@@ -243,10 +244,9 @@ class database_model extends CI_Model {
             $sql .= 'WHERE 1 ';
             $sql .= 'AND ' . $field . ' ';
             $sql .= 'BETWEEN ? AND ? ';
-
             $this->_response = $this->select_query($sql, get_called_class(), 'all', [$min, $max]);
 
-            $this->_last_query = $this->db->last_query();
+            echo $this->_last_query = $this->db->last_query();
             return $this;
         } else {
             throw new Exception("Column or Parameter(s) missed. field = $field | min = $min | max = $max", 100);
