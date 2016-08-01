@@ -33,7 +33,7 @@ class News extends CI_Controller {
             $properties = [
               "id"=>"wNsw578fac9",  
               "title"=>"Jafar",
-              "slug"=>"",
+              "slug"=>"r",
               "text"=>"checking",
             ];
             $this->news_model->set_properties($properties);

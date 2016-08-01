@@ -6,113 +6,134 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // todo : check for empty parameters add one more element to array
 // add $comparison operator stuff 
 function validate() {
-    $numargs = func_num_args();
+    $number_of_arguments = func_num_args();
     //echo $numargs;
     $paramter_list = func_get_args();
     $trace_message = get_calling_function();
     $db_fields = isset($trace_message['object']) ? $trace_message['object']::$db_fields : array();
-    if ($numargs > 0) { // check if parameter is passed
-        switch ($numargs) {
+    if ($number_of_arguments > 0) { // check if parameter is passed
+        switch ($number_of_arguments) {
             case 1:
-                $field = $paramter_list[$numargs - 1];
+                $field = $paramter_list[$number_of_arguments - 1];
                 $is_valid = validate_field($field, $db_fields, $trace_message);
                 break;
             case 2:
-                $field = $paramter_list[$numargs - 2]; // in this case field is only one 
-                $parameters = $paramter_list[$numargs - 1];
+                $field = $paramter_list[$number_of_arguments - 2]; // in this case field is only one 
+                $parameters = $paramter_list[$number_of_arguments - 1];
                 $is_valid = validate_field($field, $db_fields, $trace_message);
-                $is_valid = validate_parameter($parameters, $trace_message,$field,$db_fields);
+                $is_valid = validate_parameter($parameters, $trace_message, $field, $db_fields);
                 break;
             case 3:
                 break;
             default:
-            // if $numargs = 0 means no field is assigned to validate
-                throw new Exception("Model Validation:No Field is Assigned to query ". $trace_message['message']);
+                // if $number_of_arguments = 0 means no field is assigned to validate
+                throw new Exception("Model Validation:No Field is Assigned to query " . $trace_message['message']);
         }
         return $is_valid;
     }
 }
 
-    function validate_field($field, $db_fields, $trace_message) {
-        if (is_array($field)) {
-            $is_valid = validate_field_parameter_array($field, $db_fields, $trace_message);
-        } else {
-            $is_valid = is_valid($field, $db_fields, $trace_message);
-        }
+/**
+ * 
+ * validates field whether it is valid as array value or key
+ * 
+ * @param array || string $field
+ * @param array || string $db_fields
+ * @param array $trace_message
+ * @return boolean
+ */
 
-        return $is_valid;
+function validate_field($field, $db_fields, $trace_message) {
+    if (is_array($field)) {
+        $is_valid = validate_field_parameter_array($field, $db_fields, $trace_message);
+    } else {
+        $is_valid = is_valid($field, $db_fields, $trace_message);
     }
 
-//foreach($parameterz as $field=>$parameter){
-//	if (array_key_exists($field, $array2)) {
-//    	echo "The '$field' element is in the array";
-//		if (is_array([$array[$field]]) && in_array("null",$array[$field])){
-//			echo "no need to check";
-//		}else{
-//			echo (empty($parameter))?"{$field} is empty": "goot to go";
-//		}
-//	}
-//}
-    function is_valid($field, $db_fields, $trace_message) {
-        if (in_array($field, $db_fields)) {
-            return true;
-        }
-        if (array_key_exists($field, $db_fields)) {
-            return true;
-        }
-
-        $object = get_class($trace_message['object']);
-        $message = ($field != '') ? "<strong>\"$field\"</strong> is not found in <strong>{$object}</strong> \$db_fields" : "EMPTY Filed is passed to query";
-        throw new Exception("Model Validation: $message " . $trace_message['message'], 406);
+    return $is_valid;
+}
+/**
+ * checks if field is valid
+ * 
+ * @param array || string $field
+ * @param array $db_fields
+ * @param array $trace_message
+ * @return boolean
+ * @throws Exception
+ */
+function is_valid($field, $db_fields, $trace_message) {
+    if (in_array($field, $db_fields)) { // field is an array value
+        return true;
     }
-
-//checks if parameter_array includes correct(not empty) $values 
-    function validate_parameter_array($param_array, $trace_message) {
-        //var_dump($param_array);
-        foreach ($param_array as $key => $value) {
-            // $values cannot be empty for parameters
-            if (!isset($value) || $value == '') {
-                throw new Exception("Model Validation: Empty Parameter(s) found in <strong>parameter array</strong> " . $trace_message['message']);
-            }
-        }
+    if (array_key_exists($field, $db_fields)) { // field is array key
         return true;
     }
 
-    function validate_field_parameter_array($field_parameter_array, $allowed_db_fields, $trace_message) {
-        foreach ($field_parameter_array as $field => $parameter) {
-            if (is_valid($field, $allowed_db_fields, $trace_message)) {    // $values cannot be empty for parameters
-                    validate_parameter($parameter,$trace_message,$field,$allowed_db_fields);
-            }
+    $object = get_class($trace_message['object']); // calling class
+    $message = ($field != '') ? "<strong>\"$field\"</strong> is not found in <strong>{$object}</strong> \$db_fields" : "EMPTY Filed is passed to query";
+    throw new Exception("Model Validation: $message " . $trace_message['message'], 406);
+}
+
+/**
+ * //checks if parameter_array includes correct(not empty) $values
+ * 
+ * @param type $param_array
+ * @param type $trace_message
+ * @return boolean
+ * @throws Exception
+ */
+function validate_parameter_array($param_array, $trace_message) {
+    //var_dump($param_array);
+    foreach ($param_array as $key => $value) {
+        // $values cannot be empty for parameters
+        if (!isset($value) || $value == '') {
+            throw new Exception("Model Validation: Empty Parameter(s) found in <strong>parameter array</strong> " . $trace_message['message']);
         }
-        return true;
     }
+    return true;
+}
+
+/**
+ * checks validity of $field => $parameter in passed array 
+ * 
+ * @param array $field_parameter_array
+ * @param array $allowed_db_fields
+ * @param array $trace_message
+ * @return boolean
+ */
+function validate_field_parameter_array($field_parameter_array, $allowed_db_fields, $trace_message) {
+    foreach ($field_parameter_array as $field => $parameter) {
+        if (is_valid($field, $allowed_db_fields, $trace_message)) {    // $values cannot be empty for parameters
+            validate_parameter($parameter, $trace_message, $field, $allowed_db_fields);
+        }
+    }
+    return true;
+}
 
 // for validate_field_parameter_array function use
-    function validate_parameter($parameter, $trace_message, $field, $allowed_db_fields="") {
-         //var_dump($field);
-                    if(isset($parameter)){
+function validate_parameter($parameter, $trace_message, $field, $allowed_db_fields = "") {
+    //var_dump($field);
+    if (isset($parameter)) {
+        
+        if (key_exists($field, $allowed_db_fields) && !is_array($parameter)) { // $filed is array key
 
-            if(key_exists($field, $allowed_db_fields) && (is_array($allowed_db_fields[$field]) && in_array("null",$allowed_db_fields[$field])) &&  !is_array($parameter)){
-                //echo is_array($allowed_db_fields[$field]);
-                               // var_dump($allowed_db_fields[$field]);die;
-                return true;
-            }
-     
-            // only from validate_field_parameter_array
-            if (is_array($parameter)) {
-                //checks if array of parameters are 
-                //not including empty $value for each $key=>$value
-                $is_valid = validate_parameter_array($parameter, $trace_message);
-            }
-            if(isset($parameter) && $parameter !=''){
-                $is_valid = true;
-            } else{
-                throw new Exception("Model Validation: no parameter is passed to <strong>\"$field\"</strong> field" . $trace_message['message']); 
-            }
-       }
-        return $is_valid;
-    
+            return true; // always return true in case field is array key
+        }
+
+        // only validate_field_parameter_array funtion passes $parameter as array
+        if (is_array($parameter)) {
+            //checks if array of parameters are 
+            //not including empty $value for each $key=>$value (Not Null)
+            $is_valid = validate_parameter_array($parameter, $trace_message);
+        }
+        if ($parameter != '') {
+            $is_valid = true;
+        } else {
+            throw new Exception("Model Validation: no parameter is passed to <strong>\"$field\"</strong> field" . $trace_message['message']);
+        }
     }
+    return $is_valid;
+}
 
 function get_calling_function() {
 
