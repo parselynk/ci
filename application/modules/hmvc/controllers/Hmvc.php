@@ -1,5 +1,7 @@
 <?php
 
+if ( !defined('BASEPATH')) exit('No direct script access allowed');
+
 class Hmvc extends CI_Controller {
        public function __construct() {
         parent::__construct();
@@ -7,12 +9,21 @@ class Hmvc extends CI_Controller {
         $this->load->model('news_model');
         $this->load->helper('url_helper');
         $this->load->helper('WX_validate_helper');
+        $this->load->library('WX_template');
+
     }
     public function index() {
         $this->news_model->select_all();
-        $data['news'] = $this->news_model->data(); 
+        $data['news'] = $this->news_model->get_response(); 
         
-       $data['message'] = "check this out";
-       $this->load->view('view', $data);
+       $data['title'] = "user Login UI";
+        //$this->load->view('index', $data);
+               $this->load->view('/templates/header');
+
+        $this->wx_template->load('default','modules/hmvc/', 'content', $data);
+                $this->load->view('/templates/footer');
+
     }
 }
+ 
+
