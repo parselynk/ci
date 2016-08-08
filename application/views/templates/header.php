@@ -1,5 +1,7 @@
 <html>
+
         <head>
+                <?php echo require_headers(); ?>
                 <title>CodeIgniter Tutorial</title>
         </head>
         <body>

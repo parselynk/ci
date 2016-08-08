@@ -527,3 +527,18 @@ $config['proxy_ips'] = '';
 */
 
 $config['modules_locations'] = array(APPPATH . 'modules/');
+
+
+/*
+|--------------------------------------------------------------------------
+| CSS / JS headers 
+|--------------------------------------------------------------------------
+|
+| These are the folders where your modules are located. You may define an
+| absolute path to the location or a relative path starting from the root
+| directory.
+|
+*/
+
+$config['css_headers'] = array('style.css');
+$config['js_headers']  = array('core.js');

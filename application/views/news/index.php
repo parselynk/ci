@@ -1,4 +1,5 @@
-<h2><?php echo $title; ?></h2>
+<h2><?php echo base_url(); ?></h2>
+
 
 <p class="footer">Page rendered in <strong>{elapsed_time}</strong> seconds. <?php echo  (ENVIRONMENT === 'development') ?  'CodeIgniter Version <strong>' . CI_VERSION . '</strong>' : '' ?></p>
 

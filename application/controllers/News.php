@@ -11,6 +11,8 @@ class News extends CI_Controller {
         $this->load->model('news_model');
         $this->load->helper('url_helper');
         $this->load->helper('WX_validate_helper');
+        $this->load->helper('html');
+        $this->load->helper('WX_require_header_helper');
     }
 
     public function index() {
@@ -18,6 +20,8 @@ class News extends CI_Controller {
         $data['news'] = $this->news_model->get_response();
 
         //var_dump($data['news']);
+       // echo require_headers();die;
+
         $data['title'] = 'News archive';
 
         $this->load->view('templates/header', $data);
