@@ -56,6 +56,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 //view_by_id
 //$route['news/(:any)'] = 'news/view_by_id/$1';
 
+
+
+
 //index
 $route['news'] = 'news';
 $route['hmvc'] = 'hmvc';
@@ -90,3 +93,8 @@ $route['news/search/(:num)/(:num)'] = 'news/list_between/$1/$2';
 $route['news/(:any)'] = 'news/view_by_id/$1';
 //$route['(:any)'] = 'pages';
 //$route['default_controller'] = 'pages/view';
+
+
+$route['main'] = 'main';
+$route['main/'] = 'main/index';
+

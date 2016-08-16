@@ -7,6 +7,7 @@ class Hmvc extends CI_Controller {
         parent::__construct();
         $this->load->model('database_model');
         $this->load->model('news_model');
+        $this->load->model('webox/check_model');
         $this->load->helper('url_helper');
         $this->load->helper('WX_validate_helper');
         $this->load->library('WX_template');

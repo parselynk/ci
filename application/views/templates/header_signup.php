@@ -2,7 +2,7 @@
 
         <head>
                 <?php echo require_headers(); ?>
-                <title>Sign up</title>
+                <title>CodeIgniter Tutorial</title>
         </head>
         <body>
 

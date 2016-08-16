@@ -314,7 +314,7 @@ $config['cache_query_string'] = FALSE;
 | http://codeigniter.com/user_guide/libraries/encryption.html
 |
 */
-$config['encryption_key'] = '';
+$config['encryption_key'] =  hex2bin('5857444f63524e6346467233506f30766d44535a626c624f7a5a4637436f5769');
 
 /*
 |--------------------------------------------------------------------------
@@ -534,11 +534,22 @@ $config['modules_locations'] = array(APPPATH . 'modules/');
 | CSS / JS headers 
 |--------------------------------------------------------------------------
 |
-| These are the folders where your modules are located. You may define an
-| absolute path to the location or a relative path starting from the root
-| directory.
+| These variables are set for WX_require_header_helper
 |
 */
 
 $config['css_headers'] = array('style.css');
 $config['js_headers']  = array('core.js');
+
+
+/*
+|--------------------------------------------------------------------------
+| User Login config variables 
+|--------------------------------------------------------------------------
+|
+| These variables are required for User Login
+|
+*/
+
+$config['roles'] = array('subscriber', 'admin');
+$config['status'] = array('pending', 'approved');
