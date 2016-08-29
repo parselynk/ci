@@ -8,13 +8,17 @@ class Main extends CI_Controller {
     function __construct() {
         parent::__construct();
         $this->load->model('Database_model');
-        $this->load->library('session', 'password');
+        $this->load->library('session', 'WX_password');
         $this->load->model('User_model', 'user_model', TRUE);
         $this->load->helper('WX_validate_helper');
         $this->load->helper('url_helper');
         $this->load->helper('html');
         $this->load->helper('WX_require_header_helper');
         $this->load->library('form_validation');
+        $this->load->library('WX_password');
+        $this->load->model('Token_model', 'token');
+
+        
         $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
         $this->status = $this->config->item('status');
         $this->roles = $this->config->item('roles');
@@ -23,7 +27,7 @@ class Main extends CI_Controller {
 
     public function index() {
         //var_dump($this->session->userdata('email'));die;
-        if (empty($this->session->userdata('email'))) {
+        if (empty($this->session->userdata('email')) || empty($this->session->userdata('logged_in') )) {
             redirect(site_url() . '/main/login/');
         }
         /* front page */
@@ -35,8 +39,8 @@ class Main extends CI_Controller {
 
     public function register() {
 
-        $this->form_validation->set_rules('firstname', 'First Name', 'required');
-        $this->form_validation->set_rules('lastname', 'Last Name', 'required');
+        $this->form_validation->set_rules('first_name', 'First Name', 'required');
+        $this->form_validation->set_rules('last_name', 'Last Name', 'required');
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
 
         if ($this->form_validation->run() == FALSE) {
@@ -44,30 +48,37 @@ class Main extends CI_Controller {
             $this->load->view('user/register');
             $this->load->view('templates/user/footer');
         } else {
-            if ($this->user_model->isDuplicate($this->input->post('email'))) {
-                $this->session->set_flashdata('flash_message', 'User email already exists');
-                redirect(site_url() . 'main/login');
-            } else {
-                $clean = $this->security->xss_clean($this->input->post(NULL, TRUE));
-                $id = $this->user_model->insertUser($clean);
-                $token = $this->user_model->insertToken($id);
+            try{
+                if ($this->user_model->is_duplicate($this->input->post('email'))) {
+                    $this->session->set_flashdata('flash_message', 'User email already exists');
+                    redirect(site_url() . 'main/register');
+                } else {
+                    $clean = $this->security->xss_clean($this->input->post(NULL, TRUE));
+                    $clean['status'] = $this->user_model->status[1];
+                    $clean['role']= $this->user_model->roles[0];
+                    $result = $this->user_model->set_data($clean)->save()->get_response();
 
-                $qstring = base64_encode($token);
-                $url = site_url() . 'main/complete/token/' . $qstring;
-                $link = '<a href="' . $url . '">' . $url . '</a>';
+                    $user_id = $result['success'] == true ? $result['inserted_id']:null;
+                    $token = $this->token->insert_token($user_id);
 
-                $message = '';
-                $message .= '<strong>You have signed up with our website</strong><br>';
-                $message .= '<strong>Please click:</strong> ' . $link;
+                    $qstring = base64_encode($token);
+                    $url = site_url() . 'main/complete/token/' . $qstring;
+                    $link = '<a href="' . $url . '">' . $url . '</a>';
 
-                echo $message; //send this in email
-                exit;
-            };
+                    $message = '';
+                    $message .= '<strong>You have signed up with our website</strong><br>';
+                    $message .= '<strong>Please click:</strong> ' . $link;
+
+                    echo $message; //send this in email
+                    exit;
+                }
+            }catch(Exception $ex){
+                show_webox_error($ex, '', 'Webox Error Message', $this->user_model->get_last_query());
+            }
         }
     }
 
     public function login() {
-                    $this->load->library('password');
 
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
         $this->form_validation->set_rules('password', 'Password', 'required');
@@ -79,17 +90,18 @@ class Main extends CI_Controller {
         } else {
 
             $post = $this->input->post();
-            $clean = $this->security->xss_clean($post);
-
-            $userInfo = $this->user_model->checkLogin($clean);
-
-            if (!$userInfo) {
+            $clean_post = $this->security->xss_clean($post);
+            //$this->user_model->set_data($clean_post);
+            $userInfo = $this->user_model->check_login($clean_post)->get_response(false, false);
+            if ($userInfo['success'] !== true) {
                 $this->session->set_flashdata('flash_message', 'The login was unsucessful');
                 redirect(site_url() . 'main/login');
             }
-            foreach ($userInfo as $key => $val) {
+            foreach ($userInfo['data'] as $key => $val) {
                 $this->session->set_userdata($key, $val);
             }
+            $this->session->set_userdata('logged_in', true);
+
             redirect(site_url() . 'main/');
         }
     }
@@ -97,9 +109,8 @@ class Main extends CI_Controller {
     public function complete() {
         $token = base64_decode($this->uri->segment(4));
         $cleanToken = $this->security->xss_clean($token);
-
-        $user_info = $this->user_model->isTokenValid($cleanToken); //either false or array();           
-        var_dump($user_info);die;
+        $user_info = $this->user_model->verify_user($cleanToken); //either false or array();           
+        //var_dump($user_info);die;
         if (!$user_info) {
             $this->session->set_flashdata('flash_message', 'Token is invalid or expired');
             redirect(site_url() . 'main/login');
@@ -120,15 +131,23 @@ class Main extends CI_Controller {
             $this->load->view('templates/user/footer');
         } else {
 
-            $this->load->library('password');
             $post = $this->input->post(NULL, TRUE);
             $cleanPost = $this->security->xss_clean($post);
 
-            $hashed = $this->password->create_hash($cleanPost['password']);
+            $hashed = $this->wx_password->create_hash($cleanPost['password']);
 
             $cleanPost['password'] = $hashed;
             unset($cleanPost['passconf']);
-            $userInfo = $this->user_model->updateUserInfo($cleanPost);
+            $data = get_object_vars($user_info);
+            $data['password'] = $hashed;
+            $data['last_login'] = date('Y-m-d h:i:s A');
+            $data['status'] = $data['status'][1];
+            $data['role'] = $data['role'][0];
+                  $data['status'] = $this->user_model->status[0];
+                $data['role']= $this->user_model->roles[0];
+            
+            $userInfo = $this->user_model->set_data($data)->update_user_info();
+            
             if (!$userInfo) {
                 $this->session->set_flashdata('flash_message', 'There was a problem updating your record');
                 redirect(site_url() . 'main/login');
@@ -160,21 +179,20 @@ class Main extends CI_Controller {
         } else {
             $email = $this->input->post('email');
             $clean = $this->security->xss_clean($email);
-            $userInfo = $this->user_model->getUserInfoByEmail($clean);
-
+            $userInfo = $this->user_model->select_where('email', "=" , $clean)->get_response(true);
             if (!$userInfo) {
                 $this->session->set_flashdata('flash_message', 'We cant find your email address');
                 redirect(site_url() . 'main/login');
             }
 
-            if ($userInfo->status != $this->status[1]) { //if status is not approved
+            if ($userInfo->status != $this->user_model->status[1]) { //if status is not approved
                 $this->session->set_flashdata('flash_message', 'Your account is not in approved status');
                 redirect(site_url() . 'main/login');
             }
 
             //build token 
 
-            $token = $this->user_model->insertToken($userInfo->id);
+            $token = $this->token->insert_token($userInfo->id);
             $qstring = base64_encode($token);
             $url = site_url() . 'main/reset_password/token/' . $qstring;
             $link = '<a href="' . $url . '">' . $url . '</a>';
@@ -192,7 +210,7 @@ class Main extends CI_Controller {
         $token = base64_decode($this->uri->segment(4));
         $cleanToken = $this->security->xss_clean($token);
 
-        $user_info = $this->user_model->isTokenValid($cleanToken); //either false or array();               
+        $user_info = $this->user_model->verify_user($cleanToken); //either false or array();               
 
         if (!$user_info) {
             $this->session->set_flashdata('flash_message', 'Token is invalid or expired');
@@ -214,13 +232,20 @@ class Main extends CI_Controller {
             $this->load->view('templates/user/footer');
         } else {
 
-            $this->load->library('password');
+           // $this->load->library('password');
             $post = $this->input->post(NULL, TRUE);
             $cleanPost = $this->security->xss_clean($post);
-            $hashed = $this->password->create_hash($cleanPost['password']);
+            $hashed = $this->wx_password->create_hash($cleanPost['password']);
             $cleanPost['password'] = $hashed;
             unset($cleanPost['passconf']);
-            if (!$this->user_model->updatePassword($cleanPost)) {
+            $data = get_object_vars($user_info);
+            $data['password'] = $hashed;
+            $data['last_login'] = date('Y-m-d h:i:s A');
+            
+                                                              
+            
+            $update_response = $this->user_model->set_data($data)->update_user_info();
+            if (! $update_response) {
                 $this->session->set_flashdata('flash_message', 'There was a problem updating your password');
             } else {
                 $this->session->set_flashdata('flash_message', 'Your password has been updated. You may now login');

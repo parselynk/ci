@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed'); 
 
-class Password {
+class WX_password {
 
 	/*
 	 * Password hashing with PBKDF2.

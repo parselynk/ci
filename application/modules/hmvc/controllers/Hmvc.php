@@ -8,10 +8,18 @@ class Hmvc extends CI_Controller {
         $this->load->model('database_model');
         $this->load->model('news_model');
         $this->load->model('webox/check_model');
+        $this->load->library('session');
+        $this->session->userdata('item');
+        $newdata = array(
+        'email'  => 'johndoe'
+        );
+
+        $this->session->set_userdata($newdata);
+        $this->load->model('users/WX_user_model', 'user_model');
+
         $this->load->helper('url_helper');
         $this->load->helper('WX_validate_helper');
         $this->load->library('WX_template');
-
     }
     public function index() {
         $this->news_model->select_all();

@@ -1,6 +1,6 @@
 <?php
 
-class News extends CI_Controller {
+class Users extends CI_Controller {
 
     private $_elapsed;
     private $_last_query;
@@ -8,7 +8,7 @@ class News extends CI_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('database_model');
-        $this->load->model('news_model');
+        $this->load->model('WX_user_model', 'user_model');
         $this->load->helper('url_helper');
         $this->load->helper('WX_validate_helper');
         $this->load->helper('html');
@@ -16,13 +16,13 @@ class News extends CI_Controller {
     }
 
     public function index() {
-        $this->news_model->select_all();
-        $data['news'] = $this->news_model->get_response();
+        $this->user_model->select_all();
+        $data['news'] = $this->user_model->get_response();
 
         //var_dump($data['news']);
        // echo require_headers();die;
 
-        $data['title'] = 'News archive';
+        $data['title'] = 'Users';
 
         $this->load->view('templates/header', $data);
         $this->load->view('news/index', $data);

@@ -5,11 +5,11 @@
     $fattr = array('class' => 'form-signin');
     echo form_open('/main/register', $fattr); ?>
     <div class="form-group">
-      <?php echo form_input(array('name'=>'firstname', 'id'=> 'firstname', 'placeholder'=>'First Name', 'class'=>'form-control', 'value' => set_value('firstname'))); ?>
+      <?php echo form_input(array('name'=>'first_name', 'id'=> 'first_name', 'placeholder'=>'First Name', 'class'=>'form-control', 'value' => set_value('firstname'))); ?>
       <?php echo form_error('firstname');?>
     </div>
     <div class="form-group">
-      <?php echo form_input(array('name'=>'lastname', 'id'=> 'lastname', 'placeholder'=>'Last Name', 'class'=>'form-control', 'value'=> set_value('lastname'))); ?>
+      <?php echo form_input(array('name'=>'last_name', 'id'=> 'first_name', 'placeholder'=>'Last Name', 'class'=>'form-control', 'value'=> set_value('lastname'))); ?>
       <?php echo form_error('lastname');?>
     </div>
     <div class="form-group">

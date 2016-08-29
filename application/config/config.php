@@ -517,7 +517,7 @@ $config['proxy_ips'] = '';
 
 /*
 |--------------------------------------------------------------------------
-| Modules locations
+| WX Modules locations
 |--------------------------------------------------------------------------
 |
 | These are the folders where your modules are located. You may define an
@@ -531,7 +531,7 @@ $config['modules_locations'] = array(APPPATH . 'modules/');
 
 /*
 |--------------------------------------------------------------------------
-| CSS / JS headers 
+| WX CSS / JS headers 
 |--------------------------------------------------------------------------
 |
 | These variables are set for WX_require_header_helper
@@ -544,7 +544,7 @@ $config['js_headers']  = array('core.js');
 
 /*
 |--------------------------------------------------------------------------
-| User Login config variables 
+| WX User Login config variables 
 |--------------------------------------------------------------------------
 |
 | These variables are required for User Login

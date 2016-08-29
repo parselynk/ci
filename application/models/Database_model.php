@@ -37,7 +37,7 @@ class database_model extends CI_Model {
         return $this;
     }
     /**
-     * set_properties 
+     * set_data 
      * 
      * sets objects properties based on input data
      *
@@ -47,7 +47,7 @@ class database_model extends CI_Model {
      * @parameters	array of properties and values
      * @return	true
      */
-          public function set_properties($parameters=[]) {
+          public function set_data($parameters=[]) {
               //var_dump($this);die;
 //          $properties = [
 //              "title"=>"test set_properties",
@@ -61,23 +61,47 @@ class database_model extends CI_Model {
                   $this->$property = $value;
                   unset($properties[$property]);
               }else{
-                  $message = "'$property' is not a news_model property";
+                  $message = "'$property' is not a valid property for ".get_called_class();
                   throw new Exception($message);
               }
           }
-         return true; 
+         $this->_response = true;
+         return $this; 
           
     }
     /**
      * data 
      * 
-     * returns query result set to the controller
+     * returns _response to the controller
      *   
      * @return	query result object
      */
-    public function get_response() {
-        return $this->_response;
+    public function get_response($array_shift = false, $json_style_response = false) {
+        $response = $this->_response;
+        $response = ($json_style_response)? $response['data']: $response;
+        if($array_shift){
+            return array_shift($response);
+        }
+        return $response;
     }
+    
+    /**
+     * data 
+     * 
+     * ser _response property from a sub-classes model
+     *   
+     * @return	this
+     */
+    public function set_response($parameters) {
+        if(!empty($parameters)){
+            $this->_last_query = $this->db->last_query();
+            $this->_response = $parameters;
+        } else {
+            throw new Exception("No parameter is set");
+        }
+        return $this;
+    }
+    
 
     /**
      * last_query 
@@ -105,6 +129,17 @@ class database_model extends CI_Model {
         //die($sql);
         $this->_response = $this->select_query(($sql), get_called_class());
         return $this;
+    }
+    
+    /**
+     * affected_rows
+     * 
+     * Shows affected rows after running Query
+     * @return	Integer
+     */
+    public function affected_rows() {
+
+        return $this->db->affected_rows();
     }
 
     /**
@@ -162,7 +197,7 @@ class database_model extends CI_Model {
                     $sql .= "'%{$escaped_parameter}%'";
                     $this->_response = $this->select_query($sql, get_called_class(), 'all');
                 } else {
-                    $sql .= $escaped_parameter;
+                    $sql .= "'{$escaped_parameter}'";
                     $this->_response = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
                 }
 
@@ -319,7 +354,7 @@ class database_model extends CI_Model {
      *   
      * @return	$this object
      */
-    public function create($generated_id = true) {
+    public function create($generated_id = false) {
 
         if ($generated_id === true) {
             $this->id = $this->generate_unique_id(static::$table_name);
@@ -327,6 +362,7 @@ class database_model extends CI_Model {
         if ($this->db->insert(static::$table_name, $this)) {
 
             $insert_id = isset($this->id) ? $this->id : $this->db->insert_id();
+       
             $affected_rows = $this->db->affected_rows();
             $this->_response = ['success' => 'true',  'affected_rows' => $affected_rows,'inserted_id' => $insert_id];
         } else {
@@ -424,6 +460,7 @@ class database_model extends CI_Model {
             throw new Exception("Empty query <br> sql: " . $this->db->get_compiled_select());
         }
     }
+    
 
     /**
      * result

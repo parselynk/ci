@@ -70,7 +70,7 @@ function is_valid($field, $db_fields, $trace_message) {
     }
 
     $object = get_class($trace_message['object']); // calling class
-    $message = ($field != '') ? "<strong>\"$field\"</strong> is not found in <strong>{$object}</strong> \$db_fields" : "EMPTY Filed is passed to query";
+    $message = ($field != '') ? "<strong>\"$field\"</strong> is not found in <strong>{$object}</strong> \$db_fields" : "EMPTY Field is passed to query";
     throw new Exception("Model Validation: $message " . $trace_message['message'], 406);
 }
 
