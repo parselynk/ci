@@ -9,6 +9,7 @@ class Main extends CI_Controller {
         parent::__construct();
         $this->load->model('Database_model');
         $this->load->library('session', 'WX_password');
+        $this->load->model('Authorize');
         $this->load->model('User_model', 'user_model', TRUE);
         $this->load->helper('WX_validate_helper');
         $this->load->helper('url_helper');
@@ -26,11 +27,18 @@ class Main extends CI_Controller {
     }
 
     public function index() {
-        //var_dump($this->session->userdata('email'));die;
-        if (empty($this->session->userdata('email')) || empty($this->session->userdata('logged_in') )) {
+        /**
+         *  checks if user is logged in and user_email is set
+         * 
+         */
+        
+        if (!Authorize::is_logged_in()) {
             redirect(site_url() . '/main/login/');
         }
         /* front page */
+                         var_dump(Authorize::expose_session());
+                         Authorize::is_logged_in();
+
         $data = $this->session->userdata;
         $this->load->view('templates/user/header');
         $this->load->view('user/index', $data);
@@ -98,9 +106,14 @@ class Main extends CI_Controller {
                 redirect(site_url() . 'main/login');
             }
             foreach ($userInfo['data'] as $key => $val) {
-                $this->session->set_userdata($key, $val);
+                
+                // CI session set_userdata
+                //$this->session->set_userdata($key, $val);
+                
+                // Webox session set_userdata
+                Authorize::set_userdata($key, $val);
             }
-            $this->session->set_userdata('logged_in', true);
+            Authorize::set_userdata('logged_in', true);
 
             redirect(site_url() . 'main/');
         }
@@ -156,7 +169,13 @@ class Main extends CI_Controller {
             unset($userInfo->password);
 
             foreach ($userInfo as $key => $val) {
-                $this->session->set_userdata($key, $val);
+                
+                // CI session set_userdata
+                //$this->session->set_userdata($key, $val);
+                
+                // Webox session set_userdata
+                Authorize::set_userdata($key, $val);
+
             }
 
             redirect(site_url() . 'main/');
