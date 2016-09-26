@@ -5,7 +5,6 @@ class WX_user_model extends database_model {
    // public $status;
     //public $roles;
     
-    protected static $table_name = "users";
     /**
      *
      * database fields
