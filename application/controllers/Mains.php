@@ -38,6 +38,7 @@ class Main extends CI_Controller {
         /* front page */
                          var_dump(Authorize::expose_session());
                          Authorize::is_logged_in();
+                            echo "die";die;
 
         $data = $this->session->userdata;
         $this->load->view('templates/user/header');

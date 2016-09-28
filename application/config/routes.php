@@ -64,6 +64,8 @@ $route['news'] = 'news';
 $route['hmvc'] = 'hmvc';
 $route['hmvc/'] = 'hmvc/index';
 
+
+
 $route['news/save'] = 'news/save';
 $route['news/remove'] = 'news/remove';
 
@@ -95,6 +97,9 @@ $route['news/(:any)'] = 'news/view_by_id/$1';
 //$route['default_controller'] = 'pages/view';
 
 
-$route['main'] = 'main';
-$route['main/'] = 'main/index';
+//$route['main'] = 'main';
+//$route['main/'] = 'main/index';
 
+
+$route['swbm'] = 'swbm';
+$route['swbm/'] = 'swbm/index';
