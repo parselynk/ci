@@ -1,33 +1,37 @@
 <?php
 
-if ( !defined('BASEPATH')) exit('No direct script access allowed');
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
 
 class Swbm extends CI_Controller {
-    
+
     public $status;
     public $roles;
-    
-       public function __construct() {
+
+    public function __construct() {
         parent::__construct();
 
-        $this->load->model('webox_core/Database_model');
-        $this->load->model('webox_core/news_model');
 
-        $this->load->library('WX_template');
-        
-        $this->load->model('webox_core/Database_model');
+        // Library
         $this->load->library('session');
+        $this->load->library('WX_template');
         $this->load->library('WX_password');
         $this->load->library('form_validation');
+        
+        // Model
+        $this->load->model('webox_core/Database_model');
+        $this->load->model('webox_core/news_model');
         $this->load->model('webox_core/Authorize');
+        $this->load->model('Token_model', 'token');
         $this->load->model('webox_core/User_model', 'user_model', TRUE);
-        $this->load->helper('url_helper', 'html','WX_require_header_helper','WX_validate_helper');
+
+        // Helper
+        $this->load->helper('url_helper');
         $this->load->helper('WX_validate_helper');
         $this->load->helper('html');
         $this->load->helper('WX_validate_helper');
-        $this->load->model('Token_model', 'token');
 
-        
+        // Intialize
         $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
         $this->status = $this->config->item('status');
         $this->roles = $this->config->item('roles');
@@ -38,13 +42,12 @@ class Swbm extends CI_Controller {
          *  checks if user is logged in and user_email is set
          * 
          */
-        
         if (!Authorize::is_logged_in()) {
             redirect(site_url() . 'swbm/login/');
         }
         /* front page */
-                         var_dump(Authorize::expose_session());
-                         Authorize::is_logged_in();
+        var_dump(Authorize::expose_session());
+        Authorize::is_logged_in();
         $data = $this->session->userdata;
         $this->load->view('templates/user/header');
         $this->load->view('user/index', $data);
@@ -62,17 +65,17 @@ class Swbm extends CI_Controller {
             $this->load->view('user/register');
             $this->load->view('templates/user/footer');
         } else {
-            try{
+            try {
                 if ($this->user_model->is_duplicate($this->input->post('email'))) {
                     $this->session->set_flashdata('flash_message', 'User email already exists');
                     redirect(site_url() . 'swbm/register');
                 } else {
                     $clean = $this->security->xss_clean($this->input->post(NULL, TRUE));
                     $clean['status'] = $this->user_model->status[0];
-                    $clean['role']= $this->user_model->roles[0];
+                    $clean['role'] = $this->user_model->roles[0];
                     $result = $this->user_model->set_data($clean)->save()->get_response();
 
-                    $user_id = $result['success'] == true ? $result['inserted_id']:null;
+                    $user_id = $result['success'] == true ? $result['inserted_id'] : null;
                     $token = $this->token->insert_token($user_id);
 
                     $qstring = base64_encode($token);
@@ -86,7 +89,7 @@ class Swbm extends CI_Controller {
                     echo $message; //send this in email
                     exit;
                 }
-            }catch(Exception $ex){
+            } catch (Exception $ex) {
                 show_webox_error($ex, '', 'Webox Error Message', $this->user_model->get_last_query());
             }
         }
@@ -113,13 +116,13 @@ class Swbm extends CI_Controller {
             }
 
             foreach ($userInfo['data'] as $key => $val) {
-                
+
                 // CI session set_userdata
                 //$this->session->set_userdata($key, $val);
-                
                 // Webox session set_userdata
                 Authorize::set_userdata($key, $val);
             }
+            // sets user as logged in
             Authorize::set_userdata('logged_in', true);
             redirect(site_url() . 'swbm/');
         }
@@ -129,7 +132,7 @@ class Swbm extends CI_Controller {
         $token = base64_decode($this->uri->segment(4));
         $cleanToken = $this->security->xss_clean($token);
         $user_info = $this->user_model->verify_user($cleanToken); //either false or array();           
-        //var_dump($user_info);die;
+
         if (!$user_info) {
             $this->session->set_flashdata('flash_message', 'Token is invalid or expired');
             redirect(site_url() . 'swbm/login');
@@ -160,13 +163,11 @@ class Swbm extends CI_Controller {
             $data = get_object_vars($user_info);
             $data['password'] = $hashed;
             $data['last_login'] = date('Y-m-d h:i:s A');
-            //$data['status'] = $data['status'][1];
-            //$data['role'] = $data['role'][0];
             $data['status'] = $this->user_model->status[1];
-            $data['role']= $this->user_model->roles[0];
-            
+            $data['role'] = $this->user_model->roles[0];
+
             $userInfo = $this->user_model->set_data($data)->update_user_info();
-            
+
             if (!$userInfo) {
                 $this->session->set_flashdata('flash_message', 'There was a problem updating your record');
                 redirect(site_url() . 'swbm/login');
@@ -175,13 +176,12 @@ class Swbm extends CI_Controller {
             unset($userInfo->password);
 
             foreach ($userInfo as $key => $val) {
-                
+
                 // CI session set_userdata
                 //$this->session->set_userdata($key, $val);
                 
                 // Webox session set_userdata
                 Authorize::set_userdata($key, $val);
-
             }
 
             redirect(site_url() . 'swbm/');
@@ -204,7 +204,7 @@ class Swbm extends CI_Controller {
         } else {
             $email = $this->input->post('email');
             $clean = $this->security->xss_clean($email);
-            $userInfo = $this->user_model->select_where('email', "=" , $clean)->get_response(true);
+            $userInfo = $this->user_model->select_where('email', "=", $clean)->get_response(true);
             if (!$userInfo) {
                 $this->session->set_flashdata('flash_message', 'We cant find your email address');
                 redirect(site_url() . 'swbm/login');
@@ -257,7 +257,7 @@ class Swbm extends CI_Controller {
             $this->load->view('templates/user/footer');
         } else {
 
-           // $this->load->library('password');
+            // $this->load->library('password');
             $post = $this->input->post(NULL, TRUE);
             $cleanPost = $this->security->xss_clean($post);
             $hashed = $this->wx_password->create_hash($cleanPost['password']);
@@ -266,11 +266,11 @@ class Swbm extends CI_Controller {
             $data = get_object_vars($user_info);
             $data['password'] = $hashed;
             $data['last_login'] = date('Y-m-d h:i:s A');
-            
-                                                              
-            
+
+
+
             $update_response = $this->user_model->set_data($data)->update_user_info();
-            if (! $update_response) {
+            if (!$update_response) {
                 $this->session->set_flashdata('flash_message', 'There was a problem updating your password');
             } else {
                 $this->session->set_flashdata('flash_message', 'Your password has been updated. You may now login');
@@ -278,6 +278,5 @@ class Swbm extends CI_Controller {
             redirect(site_url() . 'swbm/login');
         }
     }
-}
- 
 
+}
