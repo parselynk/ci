@@ -72,7 +72,8 @@ if ( ! function_exists('show_webox_error'))
 		}
 
 
-                $_error =& load_class('Exceptions', 'core');
+        // loads WX_Exception in /application/core/
+        $_error =& load_class('Exceptions', 'core');
 		echo $_error->show_webox_error($heading, $error_object, 'error_general', $status_code);
 		exit($exit_status);
 	}
