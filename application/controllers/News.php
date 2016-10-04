@@ -78,7 +78,7 @@ class News extends CI_Controller {
         /* Comparison Example */
         //$parameter = '';
         try {
-            $this->news_model->select_where($field, $operator, $paramete);
+            $this->news_model->select_where($field, $operator, $parameter);
         } catch (Exception $ex) {
             //error_message($ex, $this->news_model->get_last_query());
             //show_error( $ex->getMessage(),100,'Webox Error Message');
