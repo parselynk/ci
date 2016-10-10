@@ -61,8 +61,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 //index
 $route['news'] = 'news';
-$route['hmvc'] = 'hmvc';
-$route['hmvc/'] = 'hmvc/index';
+//$route['hmvc'] = 'hmvc';
+//$route['hmvc/'] = 'hmvc/index';
 
 
 
@@ -84,7 +84,9 @@ $route['news/search/(((\w+)[,_-])+(\w+)?)'] = 'news/list_in/$1';
 
 
 //list_where
+$route['news/search'] = 'news/list_where/empty_parameter';
 $route['news/search/(:any)'] = 'news/list_where/$1';
+
 $route['news/list_where/'] = 'news/list_where/';
 
 
@@ -101,5 +103,5 @@ $route['news/(:any)'] = 'news/view_by_id/$1';
 //$route['main/'] = 'main/index';
 
 
-$route['swbm'] = 'swbm';
-$route['swbm/'] = 'swbm/index';
+//$route['swbm'] = 'swbm';
+//$route['swbm/'] = 'swbm/index';

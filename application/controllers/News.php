@@ -7,7 +7,7 @@ class News extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model('database_model');
+       $this->load->model('database_model');
         $this->load->model('news_model');
         $this->load->helper('url_helper');
         $this->load->helper('WX_validate_helper');
@@ -35,10 +35,10 @@ class News extends CI_Controller {
         try {
             //$this->news_model->
             $properties = [
-             // "id"=>"wNsw578fac9",  
-              "title"=>"Jafar",
-              "slug"=>"r",
-              "text"=>"checking",
+             "id"=>"wnne57fa46d97",  
+              "title"=>"Jafar Returns and thentxs?",
+              "slug"=>"r u serious that you gonna go",
+              "text"=>"Saint anger round",
             ];
             $this->news_model->set_data($properties);
             $this->benchmark->mark('code_start');
@@ -73,10 +73,6 @@ class News extends CI_Controller {
     }
 
     public function list_where($parameter, $field = "title", $operator = "like") {
-        /* Like Example */
-        //$this->news_model->select_where($field, $operator, $parameter );
-        /* Comparison Example */
-        //$parameter = '';
         try {
             $this->news_model->select_where($field, $operator, $parameter);
         } catch (Exception $ex) {
@@ -100,7 +96,7 @@ class News extends CI_Controller {
         //creates an array passed parameter using delimiters:[',' '_' '-'] ->
         //array(4) { [0]=> string(1) "5" [1]=> string(1) "5" [2]=> string(1) "7" [3]=> string(1) "8" }
         $parameter = preg_split("/(,|_|-)/", $parameter);
-        $parameter[]='18';
+        //$parameter[]='18';
         try {
             $this->news_model->select_in($field, $parameter);
             $data['news'] = $this->news_model->get_response();
@@ -120,9 +116,6 @@ class News extends CI_Controller {
     }
 
     public function list_between($min, $max, $field = 'id') {
-        //echo "here" .' '. $min .' '. $max;
-        //generates array from $parameter
-        //$parameter = preg_split( "/(,|_)/", $parameter );
         //var_dump($parameter);
         $parameter = [$min, $max];
         try {

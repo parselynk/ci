@@ -1,5 +1,6 @@
 <?php
 
+
 class database_model extends CI_Model {
 
     private $_response = '';
@@ -45,7 +46,7 @@ class database_model extends CI_Model {
      * this method will be called within save method.
      *   
      * @parameters	array of properties and values
-     * @return	true
+     * @return	$this
      */
           public function set_data($parameters=[]) {
               //var_dump($this);die;
@@ -122,11 +123,10 @@ class database_model extends CI_Model {
      * @return	objects of class
      */
     public function select_all() {
-//        $query = $this->db->get(static::$table_name);
-//        return $query->custom_response_object(get_called_class());
-        $sql = 'select * from ';
-        $sql .= '' . static::$table_name . '';
-        //die($sql);
+        
+//        $sql = 'select * from ';
+//        $sql .= '' . static::$table_name . '';
+        $sql = $this->db->get_compiled_select(static::$table_name);
         $this->_response = $this->select_query(($sql), get_called_class());
         return $this;
     }
@@ -152,11 +152,13 @@ class database_model extends CI_Model {
      */
     public function select_by_id($id = null) {
         if ($id) {
-            $sql = 'select * from ';
-            $sql .= static::$table_name . ' ';
-            $sql .= 'WHERE 1 ';
-            $sql .= 'AND id = ? ';
-
+//            $sql = 'select * from ';
+//            $sql .= static::$table_name . ' ';
+//            $sql .= 'WHERE 1 ';
+//            $sql .= 'AND id = ? ';
+            
+            $sql = $this->db->where(array('id' => $id))->get_compiled_select(static::$table_name, false);
+            
             //return self::result($this->db->get_where(static::$table_name, ['id' => $id], 1), get_called_class(),'row');
             $this->_response = $this->select_query($sql, get_called_class(), 'row', [$id]);
             return $this;
@@ -165,51 +167,29 @@ class database_model extends CI_Model {
         }
     }
 
-    /**
-     * select_where
-     * 
-     * Fetch all/one row(s) from static::$table_name 
-     * WHERE db.table.column has a $field which is $comparison_operator $parameter 
-     *
-     * this method fethces one row on default
-     * $params passed to this method must be array 
-     *   
-     * @param	string    $field   database table to search
-     * @param	operators $comparison_operator   operators for database comparison
-     * @param   any       $parameter  value to be find
-     * @return	object(s) of custom class
-     */
-    public function select_where($field, $comparison_operator, $parameter) {
-        
-        $valid_operator = ['LIKE', '=', '>=', '<=', '>', '<'];
+    public function select_where($field, $comparison_operator, $parameter,$select_fields='*') {
+        $valid_operator = ['LIKE', '=', '>=', '<=', '>', '<', '!='];
         $comparison_operator = strtoupper($comparison_operator);
-        validate($field);
-        if (isset($parameter) && isset($comparison_operator)) {
-            if (in_array($comparison_operator, $valid_operator)) {
-                $search = $parameter;
-                $escaped_parameter = $this->db->escape_like_str($search);
-                $sql = 'select * from ';
-                $sql .= static::$table_name . ' ';
-                $sql .= 'WHERE 1 ';
-                $sql .= 'AND ' . $field . ' ';
-                $sql .= $comparison_operator . ' ';
-                if ($comparison_operator === 'LIKE') {
-                    $sql .= "'%{$escaped_parameter}%'";
-                    $this->_response = $this->select_query($sql, get_called_class(), 'all');
-                } else {
-                    $sql .= "'{$escaped_parameter}'";
-                    $this->_response = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
-                }
-
-                $this->_last_query = $this->db->last_query();
-                return $this;
-            } else {
-                throw new Exception("Operator is not allowed ($comparison_operator) ");
-            }
-        } else {
-            throw new Exception("Parameter(s) missed field = $field | operator = $comparison_operator | parameter = $parameter ");
+        if (!isset($comparison_operator) || !in_array($comparison_operator, $valid_operator)) {
+            throw new Exception("Operator is missed or not allowed Operator:<strong> $comparison_operator</strong>");
         }
+        validate($field);
+               $this->db->select($select_fields);
+            if($comparison_operator === 'LIKE'){
+                $this->db->like($field,$parameter);
+                $sql = $this->db->get_compiled_select(static::$table_name);
+                $this->_response = $this->select_query($sql, get_called_class(), 'all');
+            } else {
+                $this->db->where($field,$parameter);
+                $sql = $this->db->get_compiled_select();
+                $this->_response = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
+                
+            }
+            $this->_last_query = $this->db->last_query();
+            return $this;
+
     }
+
 
     /**
      * select_in 
@@ -224,24 +204,16 @@ class database_model extends CI_Model {
      * @return	object(s) of called class
      */
     public function select_in($field, $parameter) {
-        //$field='check';
-        //$parameter='';
         validate($field, $parameter);
         if (isset($field) && isset($parameter)) {
             if (is_array($parameter)) {
-
-                $sql = 'select * from ';
-                $sql .= static::$table_name . ' ';
-                $sql .= 'WHERE 1 ';
-                $sql .= 'AND ' . $field . ' ';
-                $sql .= 'IN ? ';
-
+                 $this->db->where_in($field, $parameter);
+                 $sql = $this->db->get_compiled_select(static::$table_name);
+                 echo $sql;
                 $this->_response = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
             } else {
                 throw new Exception("parameters in Query must be passed as an array<br>Current Parameter: $parameter", 101);
-                //                 set_error_handler("parameters in Query must be passed as an array<br>Current Parameter: $parameter");
             }
-
             $this->_last_query = $this->db->last_query();
             return $this;
         } else {
@@ -262,9 +234,7 @@ class database_model extends CI_Model {
      */
     public function select_between($field, $parameter = []) {
         if (isset($field) && isset($parameter)) {
-            //$parameter[0]='';
-            //$parameter[1] = '';
-            //var_dump($field,$parameter);
+
             validate($field, $parameter);
             $min = $parameter[0];
             $max = $parameter[1];
@@ -287,8 +257,16 @@ class database_model extends CI_Model {
             throw new Exception("Column or Parameter(s) missed. field = $field | min = $min | max = $max", 100);
         }
     }
+    
+    /**
+     * _get_calling_function
+     * 
+     * returns the method called the running method
+     * 
+     * @return	array
+     */
 
-    public function get_calling_function() {
+    private function _get_calling_function() {
 
         $caller = debug_backtrace();
         $called = $caller[1];
@@ -354,10 +332,10 @@ class database_model extends CI_Model {
      *   
      * @return	$this object
      */
-    public function create($generated_id = false) {
-
+    public function create($generated_id = true) {
+        
         if ($generated_id === true) {
-            $this->id = $this->generate_unique_id(static::$table_name);
+            $this->id = $this->_generate_unique_id(static::$table_name);
         }
         if ($this->db->insert(static::$table_name, $this)) {
 
@@ -383,9 +361,9 @@ class database_model extends CI_Model {
     public function modify() {
 
         $this->db->where('id', $this->id);
-
         //[NOTE]
         //row gets modified only if "New" data is updated in columns 
+        
         if ($this->db->update(static::$table_name, $this)) {
             $affected_rows = $this->db->affected_rows();
             $this->_response = ['success' => 'true', 'affected_rows' => $affected_rows];
@@ -393,7 +371,9 @@ class database_model extends CI_Model {
             $affected_rows = $this->db->affected_rows();
             $this->_response = ['success' => 'false', 'affected_rows' => $affected_rows];
         }
-        $this->_last_query = $this->db->last_query();
+        
+        echo $affected_rows;
+        echo $this->_last_query = $this->db->last_query();
         return $this;
     }
 
@@ -438,9 +418,10 @@ class database_model extends CI_Model {
      * @return	object(s) of custom class, std object or array
      */
     public function select_query($query, $class, $_response_set = 'all', $params = NULL) {
-        $caller_fucntion = $this->get_calling_function();
+        $caller_fucntion = $this->_get_calling_function();
         if ($query) {
             //echo $query;die;
+            $this->_last_query = "Not Compiled yet:: ". $query;
             if ($params) {
                 if (is_array($params)) {
                     return self::result($this->db->query($query, $params), $class, $_response_set);
@@ -451,6 +432,7 @@ class database_model extends CI_Model {
                 throw new Exception("Where got parameters ???<br> sql: " . $this->db->get_compiled_select());
             } else {
                 try {
+                    
                     return self::result($this->db->query($query), $class, $_response_set);
                 } catch (Exception $ex) {
                     echo $ex->getMessage();
@@ -493,16 +475,26 @@ class database_model extends CI_Model {
             }
         }
     }
+    
+    /**
+     * _generate_unique_id
+     * 
+     * Generates unique_id for each record in database
+     *
+     *   
+     * @param	string   $prefix  table name
+     * @param	boolean	 $more_entropy  TRUE, returns string with 23 characters. Default(FALSE),returns string with 13 characters
+     * @return	string   
+     */
 
-    public function generate_unique_id($prefix = "", $more_entropy = FALSE) {
+    private function _generate_unique_id($prefix = "", $more_entropy = FALSE) {
         $prefix = strtoupper($prefix) . strtolower($prefix);
         $length = strlen($prefix) / 2;
         $key = '';
-        for ($i = 0; $i < $length; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             $key .= $prefix[(mt_rand(0, (strlen($prefix) - 1)))];
         }
-
-        return uniqid($key, $more_entropy);
+        return substr(uniqid($key, $more_entropy), 0, 13);
     }
 
 }
