@@ -181,7 +181,7 @@ class database_model extends CI_Model {
                 $this->_response = $this->select_query($sql, get_called_class(), 'all');
             } else {
                 $this->db->where($field,$parameter);
-                $sql = $this->db->get_compiled_select();
+                $sql = $this->db->get_compiled_select(static::$table_name);
                 $this->_response = $this->select_query($sql, get_called_class(), 'all', [$parameter]);
                 
             }
